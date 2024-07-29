@@ -34,9 +34,23 @@ def inizializza():
 
 inizializza()
 
-# ciclo infinito
+### ciclo infinito principale ###
 while True:
+    # gravità
     uccello_vely += 1
     uccelloy += uccello_vely
+    # leggere gli eventi
+    for event in pygame.event.get():
+        # se viene premuto un tasto sulla tastiera e questo tasto è la FRECCIA SU l'uccello deve dare una botta di ali
+        if (event.type == pygame.KEYDOWN
+            and event.key == pygame.K_UP):
+            # smette di scendere e inizia a salire
+            uccello_vely = -10
+        # se viene cliccato il tasto di chiusura il gioco si chiude 
+        if event.type == pygame.QUIT:
+            pygame.quit()
+
+
+    # aggiornamento schermo
     disegna_oggetti()
     aggiorna()
