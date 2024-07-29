@@ -56,8 +56,16 @@ class tubi_classe:
             # sovrapposizione verticale
             if uccello_lato_su < tubi_lato_su or uccello_lato_giu > tubi_lato_giu:
                 hai_perso()
-
-
+    # verifica se l'uccello si trova fra i tubi ( se l'immagine dell'uccello è sovrapposta orizzontalmente a quella dei tubi)
+    def fra_i_tubi(self, uccello, uccellox):
+        tolleranza = 5
+        uccello_lato_dx = uccellox+uccello.get_width()-tolleranza
+        uccello_lato_sx = uccellox+tolleranza
+        tubi_lato_dx = self.x + tubo_giu.get_width()
+        tubi_lato_sx = self.x
+        # se l'uccello si trova fra i tubi ritorna True
+        if uccello_lato_dx > tubi_lato_sx and uccello_lato_sx < tubi_lato_dx:
+            return True
 
 # FUNZIONI
 def disegna_oggetti():
@@ -82,6 +90,7 @@ def inizializza():
     global basex
     global tubi
     global punti
+    global fra_i_tubi
     uccellox, uccelloy = 60, 150
     uccello_vely = 0
     basex = 0
@@ -90,6 +99,7 @@ def inizializza():
     tubi = []
     # poi viene riempita
     tubi.append(tubi_classe())
+    fra_i_tubi = False
    
 def hai_perso():
     SCHERMO.blit(gameover, (50,180))
@@ -134,6 +144,24 @@ while True:
     # per ogni tubo della lista tubi controlla la collisione
     for t in tubi:
         t.collisione(uccello,uccellox,uccelloy)
+    # controllo passaggio fra_i_tubi
+    if not fra_i_tubi:
+        # controlla ogni tubo della lista tubi
+        for t in tubi:
+            # se trova un tubo con un uccello 
+            if t.fra_i_tubi(uccello, uccellox):
+                fra_i_tubi = True
+                break
+    if fra_i_tubi:
+        fra_i_tubi= False
+        for t in tubi:
+            # se trova un tubo con un uccello 
+            if t.fra_i_tubi(uccello, uccellox):
+                fra_i_tubi = True
+                break
+        # uccello appena uscito dai tubi
+        if not fra_i_tubi:
+            punti += 1
     #se l'uccello tocca la base -> gameover
     if uccelloy > 380:
         hai_perso()
