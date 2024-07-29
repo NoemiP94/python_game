@@ -20,11 +20,13 @@ SCHERMO = pygame.display.set_mode((288, 512))
 FPS = 50
 # velocità di avanzamento
 VEL_AVANZ = 3
+FONT = pygame.font.SysFont('Comic Sans MS', 50, bold=True)
 
 # CLASSE
 # generare i tubi
 class tubi_classe:
     # metodo eseguito appena la classe viene chiamata per creare un nuovo oggetto
+    # self rapprensenta l'oggetto creato
     def __init__(self):
         # posizione iniziale orizzontale
         self.x = 300
@@ -35,7 +37,26 @@ class tubi_classe:
         # muoviamo il tubo verso l'uccello ( che è fermo, è il mondo che si muove verso di lui)
         self.x -= VEL_AVANZ
         SCHERMO.blit(tubo_giu, (self.x, self.y+210))
-        SCHERMO.blit(tubo_su,(self.x, self.y-210))
+        SCHERMO.blit(tubo_su, (self.x, self.y-210))
+    # verifica collisione uccello-tubo calcolando i confini dell'immagine dell'uccello
+    # i confini dell'immagine del tubo e verifica se sono sovrapposti
+    def collisione(self, uccello, uccellox, uccelloy):
+        # allargare o restringere leggermente i confini dell'uccello
+        tolleranza = 5
+        uccello_lato_dx = uccellox+uccello.get_width()-tolleranza
+        uccello_lato_sx = uccellox+tolleranza
+        tubi_lato_dx = self.x + tubo_giu.get_width()
+        tubi_lato_sx = self.x
+        uccello_lato_su = uccelloy+tolleranza
+        uccello_lato_giu = uccelloy+uccello.get_height()-tolleranza
+        tubi_lato_su = self.y+110
+        tubi_lato_giu = self.y+210
+        # sovrapposizione orizzontale
+        if uccello_lato_dx > tubi_lato_sx and uccello_lato_sx < tubi_lato_dx:
+            # sovrapposizione verticale
+            if uccello_lato_su < tubi_lato_su or uccello_lato_giu > tubi_lato_giu:
+                hai_perso()
+
 
 
 # FUNZIONI
@@ -46,6 +67,10 @@ def disegna_oggetti():
         t.avanza_e_disegna()
     SCHERMO.blit(uccello, (uccellox,uccelloy))
     SCHERMO.blit(base, (basex, 400))
+    # disegna il punteggio (il primo argomento è la stringa da convertire in immagine, il secondo è l'antialiasing, il terzo è il colore in RGB)
+    punti_render = FONT.render(str(punti), 1, (255,255,255))
+    # la disegna in alto e al centro dello schermo
+    SCHERMO.blit(punti_render, (144, 0))
 
 # aggiorna la schermata di gioco e definisce gli FPS
 def aggiorna():
@@ -56,9 +81,11 @@ def inizializza():
     global uccellox, uccelloy, uccello_vely
     global basex
     global tubi
+    global punti
     uccellox, uccelloy = 60, 150
     uccello_vely = 0
     basex = 0
+    punti = 0
     # inizialmente la lista dei tubi è vuota
     tubi = []
     # poi viene riempita
@@ -103,7 +130,10 @@ while True:
         if event.type == pygame.QUIT:
             pygame.quit()
     #quando l'ultimo tubo della lista raggiunge l'uccello ne deve essere disegnato un'altro
-    if tubi[-1].x >150: tubi.append(tubi_classe())
+    if tubi[-1].x <150: tubi.append(tubi_classe())
+    # per ogni tubo della lista tubi controlla la collisione
+    for t in tubi:
+        t.collisione(uccello,uccellox,uccelloy)
     #se l'uccello tocca la base -> gameover
     if uccelloy > 380:
         hai_perso()
